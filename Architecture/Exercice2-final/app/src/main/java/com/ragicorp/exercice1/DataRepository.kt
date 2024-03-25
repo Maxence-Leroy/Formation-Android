@@ -1,3 +1,6 @@
 package com.ragicorp.exercice1
 
-fun getOrderedAnimals() = getAnimals().sortedBy { it.id }
+class DataRepository {
+    private val dataSource = DataSource()
+    fun getOrderedAnimals() = dataSource.getAnimals().sortedBy { it.id }
+}
