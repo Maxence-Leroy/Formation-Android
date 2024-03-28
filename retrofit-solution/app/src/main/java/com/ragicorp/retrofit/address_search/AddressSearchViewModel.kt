@@ -7,11 +7,17 @@ import com.ragicorp.retrofit.data.AddressRepository
 import com.ragicorp.retrofit.data.PlaceDomain
 import kotlinx.coroutines.launch
 
+sealed class RequestState {
+    data object Loading: RequestState()
+    class Error(val t: Throwable): RequestState()
+    class Success(val data: List<PlaceDomain>): RequestState()
+}
+
 class AddressSearchViewModel: ViewModel() {
     private val repository = AddressRepository()
 
     val searchField = mutableStateOf("")
-    val searchResult = mutableStateOf<List<PlaceDomain>>(emptyList())
+    val searchResult = mutableStateOf<RequestState>(RequestState.Success(emptyList()))
     val coordinates = mutableStateOf("")
 
     fun updateSearchField(text: String) {
@@ -20,7 +26,13 @@ class AddressSearchViewModel: ViewModel() {
 
     fun searchAddress() {
         viewModelScope.launch {
-            searchResult.value = repository.getAddressSuggestion(searchField.value)
+            searchResult.value = RequestState.Loading
+            try {
+                searchResult.value =
+                    RequestState.Success(repository.getAddressSuggestion(searchField.value))
+            } catch (t: Throwable) {
+                searchResult.value = RequestState.Error(t)
+            }
         }
     }
 

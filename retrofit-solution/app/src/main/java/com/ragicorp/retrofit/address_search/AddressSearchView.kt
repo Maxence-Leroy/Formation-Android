@@ -8,9 +8,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -29,7 +31,9 @@ fun AddressSearchView(
     val searchField = remember { viewModel.searchField }
     val searchResult = remember { viewModel.searchResult }
     val coordinates = remember { viewModel.coordinates }
-    Surface(modifier = Modifier.fillMaxSize().imePadding()) {
+    Surface(modifier = Modifier
+        .fillMaxSize()
+        .imePadding()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -52,17 +56,24 @@ fun AddressSearchView(
                 }
             }
 
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth().weight(1f, fill = true),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(searchResult.value) {
-                    AddressItem(
-                        place = it,
-                        onClick = { place -> viewModel.selectAddress(place) }
-                    )
+            when (val searchResultValue = searchResult.value) {
+                is RequestState.Loading -> CircularProgressIndicator(modifier = Modifier.size(48.dp))
+                is RequestState.Error -> Text("Error: ${searchResultValue.t.localizedMessage}")
+                is RequestState.Success -> LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f, fill = true),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(searchResultValue.data) {
+                        AddressItem(
+                            place = it,
+                            onClick = { place -> viewModel.selectAddress(place) }
+                        )
+                    }
                 }
-             }
+            }
+
 
             Text(text = coordinates.value)
         }
