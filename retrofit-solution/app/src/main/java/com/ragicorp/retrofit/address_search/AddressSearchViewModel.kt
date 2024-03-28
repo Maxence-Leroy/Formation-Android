@@ -28,8 +28,9 @@ class AddressSearchViewModel: ViewModel() {
         viewModelScope.launch {
             searchResult.value = RequestState.Loading
             try {
-                searchResult.value =
-                    RequestState.Success(repository.getAddressSuggestion(searchField.value))
+                val query = searchField.value
+                val result = repository.getAddressSuggestion(query)
+                searchResult.value = RequestState.Success(result)
             } catch (t: Throwable) {
                 searchResult.value = RequestState.Error(t)
             }
